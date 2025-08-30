@@ -10,10 +10,26 @@ const STARTING_SNAKE = [
   [0, 2],
 ];
 
+const generateApple = (snake: number[][], rows: number, cols: number) => {
+  const occupied = new Set(snake.map(([x, y]) => `${x},${y}`));
+  let apple: [number, number];
+
+  do {
+    apple = [
+      Math.floor(Math.random() * cols),
+      Math.floor(Math.random() * rows),
+    ];
+  } while (occupied.has(`${apple[0]},${apple[1]}`));
+  return apple;
+};
+
 export const App = () => {
   const [snake, setSnake] = useState<number[][]>(STARTING_SNAKE);
   const [direction, setDirection] = useState<[1 | -1 | 0, 1 | -1 | 0]>([1, 0]);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [apple, setApple] = useState<[number, number]>(
+    generateApple(STARTING_SNAKE, ROWS, COLS),
+  );
 
   useEffect(() => {
     if (isGameOver) return;
@@ -22,19 +38,23 @@ export const App = () => {
       setSnake((prev) => {
         if (prev.length === 0) return prev;
         const head = prev[0];
+        const newHead = [head[0] + direction[0], head[1] + direction[1]];
         if (
-          head[0] < 0 ||
-          head[0] >= ROWS - 1 ||
-          head[1] < 0 ||
-          head[1] >= COLS - 1
+          newHead[0] < 0 ||
+          newHead[0] >= ROWS ||
+          newHead[1] < 0 ||
+          newHead[1] >= COLS
         ) {
           setIsGameOver(true);
           return prev;
         }
-        const newHead = [head[0] + direction[0], head[1] + direction[1]];
         if (prev.some(([x, y]) => x === newHead[0] && y === newHead[1])) {
           setIsGameOver(true);
           return prev;
+        }
+        if (newHead[0] === apple[0] && newHead[1] === apple[1]) {
+          setApple(generateApple([newHead, ...prev], ROWS, COLS));
+          return [newHead, ...prev];
         }
         const newSnake = [newHead, ...prev.slice(0, -1)];
         return newSnake;
@@ -94,6 +114,7 @@ export const App = () => {
       if (e.key === " " && isGameOver) {
         setIsGameOver(false);
         setSnake(STARTING_SNAKE);
+        setDirection([1, 0]);
       }
     };
 
@@ -114,7 +135,7 @@ export const App = () => {
               Game Over!
             </p>
           )}
-          <Board snakePos={snake} rows={ROWS} cols={COLS} />
+          <Board snakePos={snake} applePos={apple} rows={ROWS} cols={COLS} />
         </div>
       </main>
       <footer className="flex justify-center py-5">
