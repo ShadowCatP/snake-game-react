@@ -1,29 +1,51 @@
 import { useEffect, useState } from "react";
 import { Board } from "./components/Board";
 
+const ROWS = 15;
+const COLS = 15;
+
+const STARTING_SNAKE = [
+  [2, 2],
+  [1, 2],
+  [0, 2],
+];
+
 export const App = () => {
-  const [snake, setSnake] = useState<number[][]>([
-    [2, 2],
-    [1, 2],
-    [0, 2],
-  ]);
+  const [snake, setSnake] = useState<number[][]>(STARTING_SNAKE);
   const [direction, setDirection] = useState<[1 | -1 | 0, 1 | -1 | 0]>([1, 0]);
+  const [isGameOver, setIsGameOver] = useState(false);
 
   useEffect(() => {
+    if (isGameOver) return;
+
     const interval = setInterval(() => {
       setSnake((prev) => {
         if (prev.length === 0) return prev;
         const head = prev[0];
+        if (
+          head[0] < 0 ||
+          head[0] >= ROWS - 1 ||
+          head[1] < 0 ||
+          head[1] >= COLS - 1
+        ) {
+          setIsGameOver(true);
+          return prev;
+        }
         const newHead = [head[0] + direction[0], head[1] + direction[1]];
+        if (prev.some(([x, y]) => x === newHead[0] && y === newHead[1])) {
+          setIsGameOver(true);
+          return prev;
+        }
         const newSnake = [newHead, ...prev.slice(0, -1)];
         return newSnake;
       });
     }, 300);
 
     return () => clearInterval(interval);
-  }, [direction]);
+  }, [direction, isGameOver]);
 
   useEffect(() => {
+    if (isGameOver) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       let nextDir: [1 | -1 | 0, 1 | -1 | 0] | null = null;
       switch (e.key) {
@@ -65,7 +87,20 @@ export const App = () => {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [direction, snake]);
+  }, [direction, isGameOver, snake]);
+
+  useEffect(() => {
+    const handleGameRestart = (e: KeyboardEvent) => {
+      if (e.key === " " && isGameOver) {
+        setIsGameOver(false);
+        setSnake(STARTING_SNAKE);
+      }
+    };
+
+    window.addEventListener("keydown", handleGameRestart);
+
+    return () => window.removeEventListener("keydown", handleGameRestart);
+  }, [isGameOver]);
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-900 text-white">
@@ -74,7 +109,12 @@ export const App = () => {
           <h1 className="font-heading text-center text-7xl tracking-widest">
             SNAKE
           </h1>
-          <Board snakePos={snake} />
+          {isGameOver && (
+            <p className="font-heading text-center text-xl text-red-500">
+              Game Over!
+            </p>
+          )}
+          <Board snakePos={snake} rows={ROWS} cols={COLS} />
         </div>
       </main>
       <footer className="flex justify-center py-5">
