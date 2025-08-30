@@ -1,6 +1,27 @@
+import { useEffect, useState } from "react";
 import { Board } from "./components/Board";
 
 export const App = () => {
+  const [snake, setSnake] = useState<number[][]>([
+    [2, 2],
+    [1, 2],
+    [0, 2],
+  ]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSnake((prev) => {
+        if (prev.length === 0) return prev;
+        const head = prev[0];
+        const newHead = [head[0] + 1, head[1]];
+        const newSnake = [newHead, ...prev.slice(0, -1)];
+        return newSnake;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col bg-neutral-900 text-white">
       <main className="flex flex-grow items-center justify-center">
@@ -8,7 +29,7 @@ export const App = () => {
           <h1 className="font-heading text-center text-7xl tracking-widest">
             SNAKE
           </h1>
-          <Board />
+          <Board snakePos={snake} />
         </div>
       </main>
       <footer className="flex justify-center py-5">
