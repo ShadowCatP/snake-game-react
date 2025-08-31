@@ -11,7 +11,7 @@ const STARTING_SNAKE = [
 ];
 
 export const App = () => {
-  const { snakePos, apple, gameState, startGame } = useGame(
+  const { snakePos, apple, gameState, startGame, score } = useGame(
     STARTING_SNAKE,
     ROWS,
     COLS,
@@ -35,6 +35,7 @@ export const App = () => {
                 ? "Start Game"
                 : "Use arrows keys or wasd to change directions!"}
           </button>
+          <p className="text-center text-lg">Score: {score}</p>
           {gameState === "over" && (
             <p className="font-heading text-center text-xl text-red-500">
               Game Over!

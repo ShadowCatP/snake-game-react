@@ -15,11 +15,13 @@ export const useGame = (
   const timer = useRef<number | null>(null);
   const [direction, setDirection] = useState<[1 | 0 | -1, 1 | 0 | -1]>([1, 0]);
   const [snakePos, setSnakePos] = useState(startPosition);
+  const [score, setScore] = useState(0);
 
   const startGame = () => {
     setGameState("running");
     setSnakePos(startPosition);
     setDirection([1, 0]);
+    setScore(0);
     setApple(generateApple(startPosition, rows, cols));
   };
 
@@ -49,13 +51,14 @@ export const useGame = (
 
       if (head[0] === apple[0] && head[1] === apple[1]) {
         setApple(generateApple(newSnake, rows, cols));
+        setScore(score + 1);
       } else {
         newSnake.pop();
       }
 
       return newSnake;
     });
-  }, [apple, cols, direction, gameState, rows]);
+  }, [apple, cols, direction, gameState, rows, score]);
 
   useEffect(() => {
     const gameInterval = setInterval(moveSnake, 300);
@@ -108,5 +111,5 @@ export const useGame = (
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [direction, gameState, snakePos]);
 
-  return { snakePos, apple, gameState, startGame };
+  return { snakePos, apple, gameState, startGame, score };
 };
