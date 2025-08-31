@@ -11,7 +11,11 @@ const STARTING_SNAKE = [
 ];
 
 export const App = () => {
-  const { snake, apple, isGameOver } = useGame(STARTING_SNAKE, ROWS, COLS);
+  const { snakePos, apple, gameState, startGame } = useGame(
+    STARTING_SNAKE,
+    ROWS,
+    COLS,
+  );
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-900 text-white">
@@ -20,12 +24,23 @@ export const App = () => {
           <h1 className="font-heading text-center text-7xl tracking-widest">
             SNAKE
           </h1>
-          {isGameOver && (
+          <button
+            disabled={gameState === "running"}
+            onClick={startGame}
+            className="rounded bg-neutral-400 px-3 py-1 disabled:bg-neutral-600"
+          >
+            {gameState === "over"
+              ? "Play Again"
+              : gameState === "idle"
+                ? "Start Game"
+                : "Use arrows keys or wasd to change directions!"}
+          </button>
+          {gameState === "over" && (
             <p className="font-heading text-center text-xl text-red-500">
               Game Over!
             </p>
           )}
-          <Board snakePos={snake} applePos={apple} rows={ROWS} cols={COLS} />
+          <Board snakePos={snakePos} applePos={apple} rows={ROWS} cols={COLS} />
         </div>
       </main>
       <footer className="flex justify-center py-5">

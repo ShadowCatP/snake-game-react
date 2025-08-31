@@ -1,53 +1,70 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { generateApple } from "../lib/utils";
+
+type GameState = "idle" | "running" | "over";
 
 export const useGame = (
   startPosition: number[][],
   rows: number,
   cols: number,
 ) => {
-  const [snake, setSnake] = useState<number[][]>(startPosition);
-  const [direction, setDirection] = useState<[1 | -1 | 0, 1 | -1 | 0]>([1, 0]);
-  const [isGameOver, setIsGameOver] = useState(false);
+  const [gameState, setGameState] = useState<GameState>("idle");
   const [apple, setApple] = useState<[number, number]>(
     generateApple(startPosition, rows, cols),
   );
+  const timer = useRef<number | null>(null);
+  const [direction, setDirection] = useState<[1 | 0 | -1, 1 | 0 | -1]>([1, 0]);
+  const [snakePos, setSnakePos] = useState(startPosition);
+
+  const startGame = () => {
+    setGameState("running");
+    setSnakePos(startPosition);
+    setDirection([1, 0]);
+    setApple(generateApple(startPosition, rows, cols));
+  };
+
+  const moveSnake = useCallback(() => {
+    if (gameState !== "running") return;
+
+    setSnakePos((prevSnake) => {
+      const newSnake = [...prevSnake];
+      const head = [...newSnake[0]];
+
+      head[0] += direction[0];
+      head[1] += direction[1];
+
+      if (head[0] < 0 || head[0] >= cols || head[1] < 0 || head[1] >= rows) {
+        setGameState("over");
+        if (timer.current) clearInterval(timer.current);
+        return prevSnake;
+      }
+
+      if (prevSnake.some(([x, y]) => x === head[0] && y === head[1])) {
+        setGameState("over");
+        if (timer.current) clearInterval(timer.current);
+        return prevSnake;
+      }
+
+      newSnake.unshift(head);
+
+      if (head[0] === apple[0] && head[1] === apple[1]) {
+        setApple(generateApple(newSnake, rows, cols));
+      } else {
+        newSnake.pop();
+      }
+
+      return newSnake;
+    });
+  }, [apple, cols, direction, gameState, rows]);
 
   useEffect(() => {
-    if (isGameOver) return;
-
-    const interval = setInterval(() => {
-      setSnake((prev) => {
-        if (prev.length === 0) return prev;
-        const head = prev[0];
-        const newHead = [head[0] + direction[0], head[1] + direction[1]];
-        if (
-          newHead[0] < 0 ||
-          newHead[0] >= rows ||
-          newHead[1] < 0 ||
-          newHead[1] >= cols
-        ) {
-          setIsGameOver(true);
-          return prev;
-        }
-        if (prev.some(([x, y]) => x === newHead[0] && y === newHead[1])) {
-          setIsGameOver(true);
-          return prev;
-        }
-        if (newHead[0] === apple[0] && newHead[1] === apple[1]) {
-          setApple(generateApple([newHead, ...prev], rows, cols));
-          return [newHead, ...prev];
-        }
-        const newSnake = [newHead, ...prev.slice(0, -1)];
-        return newSnake;
-      });
-    }, 300);
-
-    return () => clearInterval(interval);
-  }, [apple, cols, direction, isGameOver, rows]);
+    const gameInterval = setInterval(moveSnake, 300);
+    return () => clearInterval(gameInterval);
+  }, [moveSnake]);
 
   useEffect(() => {
-    if (isGameOver) return;
+    if (gameState !== "running") return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
       let nextDir: [1 | -1 | 0, 1 | -1 | 0] | null = null;
       switch (e.key) {
@@ -75,8 +92,8 @@ export const useGame = (
           break;
       }
       if (!nextDir) return;
-      const head = snake[0];
-      const second = snake[1];
+      const head = snakePos[0];
+      const second = snakePos[1];
       if (second) {
         const nextHead = [head[0] + nextDir[0], head[1] + nextDir[1]];
         if (nextHead[0] === second[0] && nextHead[1] === second[1]) {
@@ -89,21 +106,7 @@ export const useGame = (
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [direction, isGameOver, snake]);
+  }, [direction, gameState, snakePos]);
 
-  useEffect(() => {
-    const handleGameRestart = (e: KeyboardEvent) => {
-      if (e.key === " " && isGameOver) {
-        setIsGameOver(false);
-        setSnake(startPosition);
-        setDirection([1, 0]);
-      }
-    };
-
-    window.addEventListener("keydown", handleGameRestart);
-
-    return () => window.removeEventListener("keydown", handleGameRestart);
-  }, [isGameOver, startPosition]);
-
-  return { snake, apple, isGameOver };
+  return { snakePos, apple, gameState, startGame };
 };
