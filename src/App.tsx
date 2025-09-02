@@ -30,12 +30,13 @@ export const App = () => {
                 : "Use arrows keys or w/a/s/d to change directions!"}
           </button>
           <p className="text-center text-lg">Score: {score}</p>
-          {gameState === "over" && (
-            <p className="font-heading text-center text-xl text-red-500">
-              Game Over!
-            </p>
-          )}
-          <Board snakePos={snakePos} applePos={apple} rows={ROWS} cols={COLS} />
+          <Board
+            snakePos={snakePos}
+            applePos={apple}
+            rows={ROWS}
+            cols={COLS}
+            gameState={gameState}
+          />
           <div className="grid grid-cols-3 grid-rows-3 gap-3">
             <div
               onClick={() => changeDirection("up")}

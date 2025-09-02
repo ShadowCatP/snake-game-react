@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { generateApple } from "../lib/utils";
 
-type GameState = "idle" | "running" | "over";
+export type GameState = "idle" | "running" | "over";
 
 export const useGame = (
   startPosition: number[][],
