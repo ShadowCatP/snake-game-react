@@ -1,39 +1,33 @@
 import { Board } from "./components/Board";
 import { useGame } from "./hooks/useGame";
+import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
 
 const ROWS = 15;
 const COLS = 15;
 
-const STARTING_SNAKE = [
-  [2, 2],
-  [1, 2],
-  [0, 2],
-];
+const STARTING_SNAKE = [[Math.floor(COLS / 2), Math.floor(ROWS / 2)]];
 
 export const App = () => {
-  const { snakePos, apple, gameState, startGame, score } = useGame(
-    STARTING_SNAKE,
-    ROWS,
-    COLS,
-  );
+  const { snakePos, apple, gameState, startGame, score, changeDirection } =
+    useGame(STARTING_SNAKE, ROWS, COLS);
 
   return (
     <div className="flex min-h-screen flex-col bg-neutral-900 text-white">
-      <main className="flex flex-grow items-center justify-center">
-        <div className="flex flex-col gap-5">
+      <main className="mx-4 flex flex-grow items-center justify-center">
+        <div className="flex w-full max-w-xl flex-col items-center gap-5">
           <h1 className="font-heading text-center text-7xl tracking-widest">
             SNAKE
           </h1>
           <button
             disabled={gameState === "running"}
             onClick={startGame}
-            className="rounded bg-neutral-400 px-3 py-1 disabled:bg-neutral-600"
+            className="w-full rounded bg-neutral-500 px-3 py-1 text-lg tracking-wide disabled:bg-neutral-600"
           >
             {gameState === "over"
               ? "Play Again"
               : gameState === "idle"
                 ? "Start Game"
-                : "Use arrows keys or wasd to change directions!"}
+                : "Use arrows keys or w/a/s/d to change directions!"}
           </button>
           <p className="text-center text-lg">Score: {score}</p>
           {gameState === "over" && (
@@ -42,6 +36,32 @@ export const App = () => {
             </p>
           )}
           <Board snakePos={snakePos} applePos={apple} rows={ROWS} cols={COLS} />
+          <div className="grid grid-cols-3 grid-rows-3 gap-3">
+            <div
+              onClick={() => changeDirection("up")}
+              className="col-start-2 cursor-pointer rounded-lg bg-neutral-500 p-4 transition-colors hover:bg-neutral-600"
+            >
+              <ArrowUp />
+            </div>
+            <div
+              onClick={() => changeDirection("right")}
+              className="col-start-3 row-start-2 cursor-pointer rounded-lg bg-neutral-500 p-4 transition-colors hover:bg-neutral-600"
+            >
+              <ArrowRight />
+            </div>
+            <div
+              onClick={() => changeDirection("down")}
+              className="col-start-2 row-start-3 cursor-pointer rounded-lg bg-neutral-500 p-4 transition-colors hover:bg-neutral-600"
+            >
+              <ArrowDown />
+            </div>
+            <div
+              onClick={() => changeDirection("left")}
+              className="row-start-2 cursor-pointer rounded-lg bg-neutral-500 p-4 transition-colors hover:bg-neutral-600"
+            >
+              <ArrowLeft />
+            </div>
+          </div>
         </div>
       </main>
       <footer className="flex justify-center py-5">

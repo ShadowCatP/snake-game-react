@@ -8,7 +8,7 @@ interface BoardProps {
 export const Board = ({ snakePos, applePos, rows, cols }: BoardProps) => {
   return (
     <div
-      className="mx-auto grid h-[600px] w-[600px]"
+      className="mx-auto grid aspect-square h-full w-full"
       style={{
         gridTemplateColumns: `repeat(${cols}, 1fr)`,
         gridTemplateRows: `repeat(${rows}, 1fr)`,

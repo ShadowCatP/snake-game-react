@@ -60,40 +60,26 @@ export const useGame = (
     });
   }, [apple, cols, direction, gameState, rows, score]);
 
-  useEffect(() => {
-    const gameInterval = setInterval(moveSnake, 300);
-    return () => clearInterval(gameInterval);
-  }, [moveSnake]);
-
-  useEffect(() => {
-    if (gameState !== "running") return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
+  const changeDirection = useCallback(
+    (direction: "up" | "down" | "left" | "right") => {
       let nextDir: [1 | -1 | 0, 1 | -1 | 0] | null = null;
-      switch (e.key) {
-        case "w":
-        case "W":
-        case "ArrowUp":
+      switch (direction) {
+        case "up":
           nextDir = [0, -1];
           break;
-        case "s":
-        case "S":
-        case "ArrowDown":
+        case "down":
           nextDir = [0, 1];
           break;
-        case "a":
-        case "A":
-        case "ArrowLeft":
+        case "left":
           nextDir = [-1, 0];
           break;
-        case "d":
-        case "D":
-        case "ArrowRight":
+        case "right":
           nextDir = [1, 0];
           break;
         default:
           break;
       }
+
       if (!nextDir) return;
       const head = snakePos[0];
       const second = snakePos[1];
@@ -104,12 +90,49 @@ export const useGame = (
         }
       }
       setDirection(nextDir);
+    },
+    [snakePos],
+  );
+
+  useEffect(() => {
+    const gameInterval = setInterval(moveSnake, 300);
+    return () => clearInterval(gameInterval);
+  }, [moveSnake]);
+
+  useEffect(() => {
+    if (gameState !== "running") return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "w":
+        case "W":
+        case "ArrowUp":
+          changeDirection("up");
+          break;
+        case "s":
+        case "S":
+        case "ArrowDown":
+          changeDirection("down");
+          break;
+        case "a":
+        case "A":
+        case "ArrowLeft":
+          changeDirection("left");
+          break;
+        case "d":
+        case "D":
+        case "ArrowRight":
+          changeDirection("right");
+          break;
+        default:
+          break;
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
 
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [direction, gameState, snakePos]);
+  }, [changeDirection, direction, gameState, snakePos]);
 
-  return { snakePos, apple, gameState, startGame, score };
+  return { snakePos, apple, gameState, startGame, score, changeDirection };
 };
